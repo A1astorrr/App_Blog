@@ -10,3 +10,10 @@ class BaseDAO:
             query = select(cls.model).offset(skip).limit(limit)
             result = await session.execute(query)
             return result.scalars().all()
+        
+    @classmethod
+    async def find_by_id(cls, post_id: int):
+        async with async_session_maker() as session:
+            query = select(cls.model).filter_by(id=post_id)
+            result = await session.execute(query)
+            return result.scalar_one_or_none()
