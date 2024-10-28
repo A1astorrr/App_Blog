@@ -1,7 +1,8 @@
 from fastapi import APIRouter
-from app.exceptions import PostNotFound
+from app.excecptions import ErrorAdding, PageNotFound
 from app.posts.dao import PostDAO
 from app.posts.schemas import Post, PostCreate, PostUpdate
+
 
 router = APIRouter(
     prefix="/posts",
@@ -16,28 +17,30 @@ async def read_posts(skip: int = 0, limit: int = 100):
 async def read_post_by_id(post_id: int):
     post =  await PostDAO.find_by_id(post_id)
     if post is None:
-        raise PostNotFound
+        raise PageNotFound
     return post
 
 @router.post("/", response_model=Post)
 async def create_post(post: PostCreate):
-    return await PostDAO.add(**post.dict())
+    post_id =  await PostDAO.add(**post.dict())
+    if post_id is None:    
+        raise ErrorAdding
+    created_post = await PostDAO.find_by_id(post_id)
+    if created_post is None:
+        raise PageNotFound
+    return created_post
+        
 
 @router.put("/{post_id}", response_model=Post)
 async def update_post(post_id: int, post: PostUpdate):
     updated = await PostDAO.update(post_id, **post.dict(exclude_unset=True))
     if not updated:
-        raise PostNotFound
-    return updated
+        raise PageNotFound
+    return await PostDAO.find_by_id(post_id)
 
-@router.delete("/{post_id}", response_model=Post)
+@router.delete("/{post_id}")
 async def delete_post(post_id: int):
     deleted = await PostDAO.delete(post_id)
     if not deleted:
-        raise PostNotFound
+        raise PageNotFound
     return {"detail": "Пост удален"}
-
-
-# @router.get("/search")
-
-# @router.get("/statistics/{user_id}")
