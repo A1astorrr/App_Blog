@@ -9,4 +9,5 @@ class Posts(Base):
     title: str = Column(String, index=True)
     content: str = Column(String)
     created_at: DateTime = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at: DateTime = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at: DateTime = Column(DateTime(timezone=True), onupdate=func.now(), default=func.now())
+    user_id = Column(Integer)

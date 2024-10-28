@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.excecptions import ErrorAdding, PageNotFound
+from app.excecptions import AverageNumberOfPostsNotFound, ErrorAdding, PageNotFound
 from app.posts.dao import PostDAO
 from app.posts.schemas import Post, PostCreate,PostUpdate
 
@@ -48,3 +48,10 @@ async def delete_post(post_id: int):
 @router.get("/search/{query}", response_model=list[Post])
 async def search_posts(query: str):
     return  await PostDAO.search_posts(query)
+
+@router.get("/statistics/{user_id}")
+async def statistics_posts(user_id: int):
+    average_posts = await PostDAO.get_average_posts_per_month(user_id)
+    if not average_posts:
+        raise AverageNumberOfPostsNotFound
+    return {"Average_posts_per_month": average_posts}

@@ -1,5 +1,5 @@
 from app.database import async_session_maker
-from sqlalchemy import delete, insert, select, update, or_
+from sqlalchemy import delete, func, insert, select, update, or_
 
 class BaseDAO:
     model = None
@@ -55,4 +55,14 @@ class BaseDAO:
             )
             result = await session.execute(statement)
             return result.scalars().all()
+        
+    @classmethod
+    async def get_average_posts_per_month(cls, user_id: int):
+        async with  async_session_maker() as session:
+            subquery = select(func.count().label("post_count")
+                              ).where(cls.model.user_id  == user_id
+                                   ).group_by(func.date_trunc('month', cls.model.created_at))
+            query = select(func.avg(subquery.c.post_count)). select_from(subquery)
+            result = await session.execute(query)                                                            
+            return result.scalar()
             
