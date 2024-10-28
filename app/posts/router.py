@@ -1,7 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from app.excecptions import ErrorAdding, PageNotFound
 from app.posts.dao import PostDAO
-from app.posts.schemas import Post, PostCreate, PostUpdate
+from app.posts.schemas import Post, PostCreate,PostUpdate
 
 
 router = APIRouter(
@@ -44,3 +44,7 @@ async def delete_post(post_id: int):
     if not deleted:
         raise PageNotFound
     return {"detail": "Пост удален"}
+
+@router.get("/search/{query}", response_model=list[Post])
+async def search_posts(query: str):
+    return  await PostDAO.search_posts(query)

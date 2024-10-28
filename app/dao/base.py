@@ -44,4 +44,15 @@ class BaseDAO:
             await session.commit()
             return result.rowcount > 0
 
+    @classmethod
+    async def search_posts(cls, query: str):
+        async with async_session_maker() as session:
+            statement = select(cls.model).filter(
+                or_ (
+                    cls.model.title.ilike(f"%{query}%"),
+                    cls.model.content.ilike(f"%{query}%")
+                )
+            )
+            result = await session.execute(statement)
+            return result.scalars().all()
             
